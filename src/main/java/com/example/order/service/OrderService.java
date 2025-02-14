@@ -12,12 +12,14 @@ import com.example.order.service.usecase.FetchOrderQuery;
 import com.example.order.service.usecase.ProcessExcelOrdersUseCase;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
 
 @Service
+@Transactional
 public class OrderService implements
         FetchOrderQuery,
         CreateOrderUseCase,
@@ -72,6 +74,7 @@ public class OrderService implements
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OrderDto fetchOrder(Long orderId) throws ChangeSetPersister.NotFoundException {
         Order order = orderRepository.findById(orderId).orElseThrow(
                 ChangeSetPersister.NotFoundException::new
@@ -80,6 +83,7 @@ public class OrderService implements
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<OrderDto> fetchAllOrders() {
         List<Order> orders = orderRepository.findAll();
         return orders.stream().map(this::toOrderDto).toList();

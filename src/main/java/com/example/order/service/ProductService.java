@@ -6,18 +6,25 @@ import com.example.order.repository.ProductRepository;
 import com.example.order.service.usecase.CreateProductUseCase;
 import com.example.order.service.usecase.FetchProductQuery;
 import com.example.order.service.usecase.UpdateProductUseCase;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class ProductService implements
         FetchProductQuery,
         CreateProductUseCase,
         UpdateProductUseCase
 {
     private final ProductRepository productRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public ProductService(ProductRepository productRepository) {
         this.productRepository = productRepository;
@@ -42,6 +49,7 @@ public class ProductService implements
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductDto fetchProduct(Long productId) throws ChangeSetPersister.NotFoundException {
         Product product = productRepository.findById(productId)
                 .orElseThrow(ChangeSetPersister.NotFoundException::new);
@@ -49,6 +57,7 @@ public class ProductService implements
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProductDto> fetchAllProducts() {
         return productRepository.findAll().stream()
                 .map(this::toProductDto)
