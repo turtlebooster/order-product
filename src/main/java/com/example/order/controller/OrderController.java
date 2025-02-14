@@ -69,6 +69,17 @@ public class OrderController {
                 .body(new SimpleIdResponse(order.orderId()));
     }
 
+    @PostMapping("/excel-bulk/validate")
+    public ResponseEntity<String> validateUploadOrders(@RequestParam("file") MultipartFile file) {
+        throw new UnsupportedOperationException("Not implemented yet");
+//        try {
+//            processExcelOrdersUseCase.processExcelFile(file);
+//            return ResponseEntity.ok("File has been successfully processed.");
+//        } catch (IOException e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the file.");
+//        }
+    }
+
     @PostMapping("/excel-bulk")
     public ResponseEntity<String> uploadOrders(@RequestParam("file") MultipartFile file) {
         throw new UnsupportedOperationException("Not implemented yet");

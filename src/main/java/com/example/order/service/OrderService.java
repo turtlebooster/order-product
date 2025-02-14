@@ -22,8 +22,7 @@ import java.util.List;
 @Transactional
 public class OrderService implements
         FetchOrderQuery,
-        CreateOrderUseCase,
-        ProcessExcelOrdersUseCase
+        CreateOrderUseCase
 {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
@@ -70,11 +69,6 @@ public class OrderService implements
         order.setOrderItems(orderItemList);
         orderRepository.save(order);
         return toOrderDto(order);
-    }
-
-    @Override
-    public void processExcelOrders(MultipartFile file) throws IOException {
-
     }
 
     @Override

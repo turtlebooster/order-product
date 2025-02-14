@@ -36,6 +36,10 @@ dependencies {
 
     // Springdoc OpenAPI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+
+    // poi
+    implementation("org.apache.poi:poi:5.0.0")
+    implementation("org.apache.poi:poi-ooxml:5.0.0")
 }
 
 tasks.withType<Test> {

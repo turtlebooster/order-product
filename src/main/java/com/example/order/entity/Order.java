@@ -45,7 +45,12 @@ public class Order {
     }
 
     public void setOrderItems(List<OrderItem> orderItems) {
+        this.orderItems.clear();
         this.orderItems.addAll(orderItems);
+    }
+
+    public void addOrderItem(OrderItem orderItem) {
+        this.orderItems.add(orderItem);
     }
 }
 
