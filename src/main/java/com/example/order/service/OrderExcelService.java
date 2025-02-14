@@ -10,6 +10,9 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -83,5 +86,12 @@ public class OrderExcelService implements
 
             orderRepository.saveAll(orderMap.values());
         }
+    }
+
+    @Override
+    public InputStreamResource downloadExcelTemplate() throws IOException {
+        // resources/templates/order_template.xlsx
+        Resource resource = new ClassPathResource("templates/order_template.xlsx");
+        return new InputStreamResource(resource.getInputStream());
     }
 }

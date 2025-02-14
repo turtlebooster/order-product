@@ -9,7 +9,9 @@ import com.example.order.service.usecase.CreateOrderUseCase;
 import com.example.order.service.usecase.FetchOrderQuery;
 import com.example.order.service.usecase.ProcessExcelOrdersUseCase;
 import jakarta.validation.Valid;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -70,6 +72,16 @@ public class OrderController {
                 .status(HttpStatus.CREATED)
                 .body(new SimpleIdResponse(order.orderId()));
     }
+
+    @GetMapping("/excel-bulk-template")
+    public ResponseEntity<InputStreamResource> downloadExcelBulkTemplate() throws IOException {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=order_template.xlsx")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(processExcelOrdersUseCase.downloadExcelTemplate());
+
+    }
+
 
     @PostMapping(value = "/excel-bulk", consumes = (MediaType.MULTIPART_FORM_DATA_VALUE))
     public ResponseEntity<String> uploadOrdersByExcel(@RequestParam("file") MultipartFile file) {
