@@ -39,14 +39,17 @@ public class OrderService implements
             throw new IllegalArgumentException("Order items must not be empty.");
         }
         // 상품 ID 목록
-        List<Long> productIds = orderDto.orderItems()
+        List<Long> originProductIds = orderDto.orderItems()
                 .stream()
                 .map(OrderItemDto::productId)
-                .distinct()
                 .toList();
-        // 상품 목록
-        List<Product> products = productRepository.findAllById(productIds);
+        List<Long> productIds = originProductIds.stream().distinct().toList();
+        if (originProductIds.size() != productIds.size()) {
+            throw new IllegalArgumentException("Duplicate product ID.");
+        }
 
+        // 상품 목록
+        List<Product> products = productRepository.findAllByIdsWithLock(productIds);
         if (products.size() != productIds.size()) {
             throw new IllegalArgumentException("Product not found.");
         }
@@ -59,7 +62,8 @@ public class OrderService implements
                                 products.stream()
                                         .filter(product -> product.getId().equals(orderItemDto.productId()))
                                         .findFirst()
-                                        .orElseThrow(() -> new IllegalArgumentException("Product not found.")),
+                                        .orElseThrow(() -> new IllegalArgumentException("Product not found."))
+                                        .decreaseStock(orderItemDto.quantity()),
                                 orderItemDto.quantity()
                         )
                 ).toList();

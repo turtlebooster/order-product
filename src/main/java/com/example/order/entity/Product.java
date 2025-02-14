@@ -26,4 +26,19 @@ public class Product {
         this.stock = stock;
         return this;
     }
+
+    public Product decreaseStock(Long quantity) {
+        if (this.stock < quantity) {
+            throw new IllegalArgumentException(
+                    """
+                    quantity cannot be greater than stock,
+                    productName: %s,
+                    stock: %d,
+                    quantity: %d
+                    """.formatted(this.name, this.stock, quantity)
+            );
+        }
+        this.stock -= quantity;
+        return this;
+    }
 }
