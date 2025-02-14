@@ -11,10 +11,12 @@ import com.example.order.service.usecase.ProcessExcelOrdersUseCase;
 import jakarta.validation.Valid;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -69,25 +71,13 @@ public class OrderController {
                 .body(new SimpleIdResponse(order.orderId()));
     }
 
-    @PostMapping("/excel-bulk/validate")
-    public ResponseEntity<String> validateUploadOrders(@RequestParam("file") MultipartFile file) {
-        throw new UnsupportedOperationException("Not implemented yet");
-//        try {
-//            processExcelOrdersUseCase.processExcelFile(file);
-//            return ResponseEntity.ok("File has been successfully processed.");
-//        } catch (IOException e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the file.");
-//        }
-    }
-
-    @PostMapping("/excel-bulk")
-    public ResponseEntity<String> uploadOrders(@RequestParam("file") MultipartFile file) {
-        throw new UnsupportedOperationException("Not implemented yet");
-//        try {
-//            processExcelOrdersUseCase.processExcelFile(file);
-//            return ResponseEntity.ok("File has been successfully processed.");
-//        } catch (IOException e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the file.");
-//        }
+    @PostMapping(value = "/excel-bulk", consumes = (MediaType.MULTIPART_FORM_DATA_VALUE))
+    public ResponseEntity<String> uploadOrdersByExcel(@RequestParam("file") MultipartFile file) {
+        try {
+            processExcelOrdersUseCase.processExcelOrders(file);
+            return ResponseEntity.ok("File has been successfully processed.");
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the file.");
+        }
     }
 }

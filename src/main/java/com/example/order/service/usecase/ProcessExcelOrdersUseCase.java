@@ -7,6 +7,4 @@ import java.io.IOException;
 
 public interface ProcessExcelOrdersUseCase {
     void processExcelOrders(MultipartFile file) throws IOException;
-
-    BulkUploadPreviewResult previewExcelOrders(MultipartFile file) throws IOException;
 }
