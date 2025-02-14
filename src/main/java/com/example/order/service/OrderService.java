@@ -4,7 +4,9 @@ import com.example.order.dto.OrderDto;
 import com.example.order.dto.OrderItemDto;
 import com.example.order.entity.Order;
 import com.example.order.entity.OrderItem;
+import com.example.order.entity.Product;
 import com.example.order.repository.OrderRepository;
+import com.example.order.repository.ProductRepository;
 import com.example.order.service.usecase.CreateOrderUseCase;
 import com.example.order.service.usecase.FetchOrderQuery;
 import com.example.order.service.usecase.ProcessExcelOrdersUseCase;
@@ -22,9 +24,11 @@ public class OrderService implements
         ProcessExcelOrdersUseCase
 {
     private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
 
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository, ProductRepository productRepository) {
         this.orderRepository = orderRepository;
+        this.productRepository = productRepository;
     }
 
     @Override
@@ -32,12 +36,28 @@ public class OrderService implements
         if (orderDto.orderItems() == null || orderDto.orderItems().isEmpty()) {
             throw new IllegalArgumentException("Order items must not be empty.");
         }
+        // 상품 ID 목록
+        List<Long> productIds = orderDto.orderItems()
+                .stream()
+                .map(OrderItemDto::productId)
+                .distinct()
+                .toList();
+        // 상품 목록
+        List<Product> products = productRepository.findAllById(productIds);
+
+        if (products.size() != productIds.size()) {
+            throw new IllegalArgumentException("Product not found.");
+        }
+
         Order order = new Order(orderDto.customerName(), orderDto.customerAddress());
         List<OrderItem> orderItemList = orderDto.orderItems()
                 .stream().map(
                         orderItemDto -> new OrderItem(
                                 order,
-                                orderItemDto.productName(),
+                                products.stream()
+                                        .filter(product -> product.getId().equals(orderItemDto.productId()))
+                                        .findFirst()
+                                        .orElseThrow(() -> new IllegalArgumentException("Product not found.")),
                                 orderItemDto.quantity()
                         )
                 ).toList();
@@ -73,7 +93,8 @@ public class OrderService implements
                 order.getOrderItems().stream().map(
                         orderItem -> new OrderItemDto(
                                 orderItem.getId(),
-                                orderItem.getProductName(),
+                                orderItem.getProduct().getId(),
+                                orderItem.getProduct().getName(),
                                 orderItem.getQuantity()
                         )
                 ).toList()

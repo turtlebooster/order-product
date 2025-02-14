@@ -6,12 +6,14 @@ import jakarta.validation.constraints.Positive;
 
 public record OrderItemRequest(
         @NotNull
-        @NotEmpty
-        String productName,
+        Long productId,
         @NotNull
-        int quantity
+        Long quantity
 ) {
         public OrderItemRequest {
+                if (productId <= 0) {
+                        throw new IllegalArgumentException("Product ID must be greater than 0");
+                }
                 if (quantity <= 0) {
                         throw new IllegalArgumentException("Quantity must be greater than 0");
                 }

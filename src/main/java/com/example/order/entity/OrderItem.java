@@ -5,28 +5,28 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
+@Getter
 @Table(name = "order_items")
 public class OrderItem {
     @Id
-    @Getter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @Getter
-    private String productName;
-    @Getter
-    private int quantity;
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+
+    private Long quantity;
 
     public OrderItem() {}
 
-    public OrderItem(Order order, String productName, int quantity) {
+    public OrderItem(Order order, Product product, Long quantity) {
         this.order = order;
-        this.productName = productName;
+        this.product = product;
         this.quantity = quantity;
     }
 }

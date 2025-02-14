@@ -5,7 +5,9 @@ import com.example.order.dto.OrderItemDto;
 import com.example.order.dto.request.OrderRequest;
 import com.example.order.dto.response.OrderResponse;
 import com.example.order.dto.response.SimpleIdResponse;
-import com.example.order.service.OrderService;
+import com.example.order.service.usecase.CreateOrderUseCase;
+import com.example.order.service.usecase.FetchOrderQuery;
+import com.example.order.service.usecase.ProcessExcelOrdersUseCase;
 import jakarta.validation.Valid;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
@@ -13,31 +15,41 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
-    private final OrderService orderService;
+    private final FetchOrderQuery fetchOrderQuery;
+    private final CreateOrderUseCase createOrderUseCase;
+    private final ProcessExcelOrdersUseCase processExcelOrdersUseCase;
 
-    public OrderController(OrderService orderService) {
-        this.orderService = orderService;
+    public OrderController(FetchOrderQuery fetchOrderQuery, CreateOrderUseCase createOrderUseCase, ProcessExcelOrdersUseCase processExcelOrdersUseCase) {
+        this.fetchOrderQuery = fetchOrderQuery;
+        this.createOrderUseCase = createOrderUseCase;
+        this.processExcelOrdersUseCase = processExcelOrdersUseCase;
     }
 
     @GetMapping
-    public ResponseEntity<List<OrderDto>> getOrders() {
-        return ResponseEntity.ok(orderService.fetchAllOrders());
+    public ResponseEntity<List<OrderResponse>> getOrders() {
+        return ResponseEntity.ok(
+                fetchOrderQuery.fetchAllOrders()
+                        .stream()
+                        .map(OrderDto::toResponse)
+                        .toList()
+        );
     }
 
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getOrder(@PathVariable Long orderId) throws ChangeSetPersister.NotFoundException {
-        return ResponseEntity.ok(orderService.fetchOrder(orderId).toResponse());
+        return ResponseEntity.ok(
+                fetchOrderQuery.fetchOrder(orderId).toResponse()
+        );
     }
 
     @PostMapping
     public ResponseEntity<SimpleIdResponse> createOrder(@Valid @RequestBody OrderRequest orderRequest) {
-        OrderDto order = orderService.createOrder(
+        OrderDto order = createOrderUseCase.createOrder(
                 new OrderDto(
                         null,
                         orderRequest.customerName(),
@@ -45,7 +57,8 @@ public class OrderController {
                         orderRequest.orderItems().stream().map(
                                 orderItemRequest -> new OrderItemDto(
                                         null,
-                                        orderItemRequest.productName(),
+                                        orderItemRequest.productId(),
+                                        null,
                                         orderItemRequest.quantity()
                                 )
                         ).toList()
@@ -56,11 +69,11 @@ public class OrderController {
                 .body(new SimpleIdResponse(order.orderId()));
     }
 
-    @PostMapping("/upload")
+    @PostMapping("/excel-bulk")
     public ResponseEntity<String> uploadOrders(@RequestParam("file") MultipartFile file) {
         throw new UnsupportedOperationException("Not implemented yet");
 //        try {
-//            orderService.processExcelFile(file);
+//            processExcelOrdersUseCase.processExcelFile(file);
 //            return ResponseEntity.ok("File has been successfully processed.");
 //        } catch (IOException e) {
 //            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the file.");
